@@ -1,0 +1,3 @@
+order_id,customer,product,category,quantity,price,discount,city,order_date
+1003,Amit,Keyboard,Electronics,1,1500.0,500,Delhi,2026-01-07
+1005,Rohan,Monitor,Electronics,1,,0,Bangalore,2026-01-09
