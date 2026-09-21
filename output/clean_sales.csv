@@ -9,3 +9,4 @@ order_id,customer,product,category,quantity,price,discount,city,order_date,total
 1008,Pooja,Mouse,Electronics,3,800.0,90,Pune,2026-01-12,2400.0,2310.0
 1009,Arjun,Chair,Furniture,1,5000.0,1000,Delhi,2026-01-13,5000.0,4000.0
 1010,Riya,Monitor,Electronics,2,12000.0,5000,Mumbai,2026-01-14,24000.0,19000.0
+1011,Ananya,Mouse,Electronics,2,800.0,100,Delhi,2026-01-15,1600.0,1500.0
