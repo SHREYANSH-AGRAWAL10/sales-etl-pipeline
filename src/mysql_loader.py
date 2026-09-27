@@ -108,6 +108,7 @@ def load_data(df, connection):
             f"Records skipped: {skipped_count}"
         )
 
+        return inserted_count, skipped_count
 
     except Exception as e:
 
@@ -115,6 +116,56 @@ def load_data(df, connection):
 
         logging.error(
             f"Error while loading data: {e}"
+        )
+
+        raise
+
+
+    finally:
+
+        cursor.close()
+
+# -----------------------------
+# Loading for ETL run
+# -----------------------------
+
+def log_etl_run (connection, records_processed, records_inserted , records_skipped , status):
+
+    cursor = connection.cursor()
+
+    try:
+
+        query = """
+            INSERT INTO etl_load_log (
+                pipeline_name,
+                records_processed,
+                records_inserted,
+                records_skipped,
+                run_status
+            )
+            VALUES (
+                %s, %s, %s, %s, %s
+            )
+        """
+
+        cursor.execute(
+            query,
+            ("Sales ETL", records_processed, records_inserted , records_skipped , status)
+        )
+
+        connection.commit()
+
+        logging.info(
+            f"ETL run logged with status: {status}"
+        )
+
+
+    except Exception as e:
+
+        connection.rollback()
+
+        logging.error(
+            f"Error while logging ETL run: {e}"
         )
 
         raise
@@ -138,7 +189,21 @@ if __name__ == "__main__":
 
     try:
 
-        load_data(df, connection)
+        #function calls
+
+        inserted_count , skipped_count = load_data(df, connection)
+
+        print("DEBUG processed:", len(df))
+        print("DEBUG inserted:", inserted_count)
+        print("DEBUG skipped:", skipped_count)
+
+        log_etl_run(
+        connection,
+        len(df),
+        inserted_count,
+        skipped_count,
+        "SUCCESS"
+        )
 
     finally:
 
