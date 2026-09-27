@@ -1,5 +1,9 @@
 import mysql.connector
 import logging
+import os
+
+from dotenv import load_dotenv
+load_dotenv()
 
 from sales_etl import run_etl, setup_logging
 
@@ -11,10 +15,10 @@ from sales_etl import run_etl, setup_logging
 def create_connection():
 
     connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="Qwerty@001",
-        database="sales_db"
+        host=os.getenv("MYSQL_HOST"),
+        user=os.getenv("MYSQL_USER"),
+        password=os.getenv("MYSQL_PASSWORD"),
+        database=os.getenv("MYSQL_DATABASE")
     )
 
     # print("Connected to MySQL successfully!")
@@ -193,9 +197,9 @@ if __name__ == "__main__":
 
         inserted_count , skipped_count = load_data(df, connection)
 
-        print("DEBUG processed:", len(df))
-        print("DEBUG inserted:", inserted_count)
-        print("DEBUG skipped:", skipped_count)
+        # print("DEBUG processed:", len(df))
+        # print("DEBUG inserted:", inserted_count)
+        # print("DEBUG skipped:", skipped_count)
 
         log_etl_run(
         connection,
