@@ -19,6 +19,7 @@ def create_connection():
         user=os.getenv("MYSQL_USER"),
         password=os.getenv("MYSQL_PASSWORD"),
         database=os.getenv("MYSQL_DATABASE")
+        # database = "Testing_error"
     )
 
     # print("Connected to MySQL successfully!")
@@ -36,6 +37,9 @@ def load_data(df, connection):
     cursor = connection.cursor()
 
     try:
+
+        # testing load failure
+        # raise Exception("Testing load failure")
 
         insert_query = """
             INSERT IGNORE INTO sales (
@@ -133,7 +137,7 @@ def load_data(df, connection):
 # Loading for ETL run
 # -----------------------------
 
-def log_etl_run (connection, records_processed, records_inserted , records_skipped , status):
+def log_etl_run (connection, records_processed, records_inserted , records_skipped , status , error_message=None):
 
     cursor = connection.cursor()
 
@@ -145,16 +149,17 @@ def log_etl_run (connection, records_processed, records_inserted , records_skipp
                 records_processed,
                 records_inserted,
                 records_skipped,
-                run_status
+                run_status,
+                error_message
             )
             VALUES (
-                %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s
             )
         """
 
         cursor.execute(
             query,
-            ("Sales ETL", records_processed, records_inserted , records_skipped , status)
+            ("Sales ETL", records_processed, records_inserted , records_skipped , status , error_message)
         )
 
         connection.commit()
@@ -187,28 +192,50 @@ if __name__ == "__main__":
 
     setup_logging()
 
-    df = run_etl()
-
-    connection = create_connection()
+    connection = None
 
     try:
 
-        #function calls
+        df = run_etl()
 
-        inserted_count , skipped_count = load_data(df, connection)
+        connection = create_connection()
 
-        # print("DEBUG processed:", len(df))
-        # print("DEBUG inserted:", inserted_count)
-        # print("DEBUG skipped:", skipped_count)
+        inserted_count, skipped_count = load_data(
+            df,
+            connection
+        )
 
         log_etl_run(
-        connection,
-        len(df),
-        inserted_count,
-        skipped_count,
-        "SUCCESS"
+            connection,
+            len(df),
+            inserted_count,
+            skipped_count,
+            "SUCCESS"
         )
+
+    except Exception as e:
+
+        logging.error(
+            f"ETL pipeline failed: {e}"
+        )
+
+        if "df" in locals():
+            records_processed = len(df)
+        else:
+            records_processed = 0
+        
+        log_etl_run(
+                connection,
+                records_processed,
+                0,
+                0,
+                "FAILED",
+                str(e)
+        )
+
+        raise
 
     finally:
 
-        connection.close()
+        if connection:
+            connection.close()
